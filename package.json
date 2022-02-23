@@ -1,0 +1,49 @@
+{
+  "name": "playwright-tesults-reporter",
+  "version": "1.0.0",
+  "description": "Playwright Tesults Reporter",
+  "main": "playwright-tesults-reporter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "playwright",
+    "reporter",
+    "tesults",
+    "test",
+    "results",
+    "automation",
+    "automated",
+    "dashboard",
+    "reporting"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tesults/playwright-tesults-reporter.git"
+  },
+  "author": {
+    "name": "Tesults",
+    "email": "help@tesults.com",
+    "url": "https://www.tesults.com"
+  },
+  "contributors": [
+    {
+      "name": "Ajeet Dhaliwal",
+      "email": "ajeet.dhaliwal@tesults.com"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Ajeet Dhaliwal",
+      "email": "ajeet.dhaliwal@tesults.com"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tesults/playwright-tesults-reporter/issues"
+  },
+  "homepage": "https://github.com/tesults/playwright-tesults-reporter#readme",
+  "dependencies": {
+    "tesults": "^1.1.3"
+  }
+}
