@@ -327,7 +327,7 @@ class tesultsReporter {
 
         let replace = false;
         if (this.testIndices[testCase.suite + " " + testCase.name] !== undefined) {
-            let index = this.testIndices[testCase + " " + testCase.name];
+            let index = this.testIndices[testCase.suite + " " + testCase.name];
             if (index < this.data.results.cases.length) {
                 let t = this.data.results.cases[index];
                 if (t["_Retry"] !== testCase["_Retry"]) {
@@ -335,6 +335,8 @@ class tesultsReporter {
                     this.data.results.cases[index] = testCase;
                 }
             }
+        } else {
+            this.testIndices[testCase.suite + " " + testCase.name] = this.data.results.cases.length
         }
         
         if (replace === false) {
