@@ -15,6 +15,11 @@ class tesultsReporter {
             target: 'token',
             results: {
                 cases: []
+            },
+            metadata: {
+                integration_name: "playwright-tesults-reporter",
+                integration_version: "1.1.0",
+                test_framework: "playwright"
             }
         };
 
