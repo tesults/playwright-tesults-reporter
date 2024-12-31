@@ -10,6 +10,7 @@ class tesultsReporter {
 
     onBegin(config, suite) {
         this.disabled = true
+        this.retries = new Map();
 
         this.data = {
             target: 'token',
@@ -18,7 +19,7 @@ class tesultsReporter {
             },
             metadata: {
                 integration_name: "playwright-tesults-reporter",
-                integration_version: "1.1.0",
+                integration_version: "1.2.0",
                 test_framework: "playwright"
             }
         };
@@ -167,6 +168,13 @@ class tesultsReporter {
         if (result.status === "failed") {
             testCase.result = "fail";
         }
+        if (test.expectedStatus !== "passed") { // "passed" is the default expected status
+            if (test.expectedStatus === result.status) {
+                testCase.result = "pass";
+            } else {
+                testCase.result = "fail";
+            }
+        }
         try {
             if (test.annotations !== undefined && test.annotations !== null) {
                 if (Array.isArray(test.annotations)) {
@@ -179,7 +187,7 @@ class tesultsReporter {
             // Unable to capture annotations
         }
         testCase["_Timeout"] = test.timeout;
-        testCase["_Retries"] = test.retries;
+        testCase["_Retries Configuration Setting"] = test.retries;
         testCase["_Expected Status"] = test.expectedStatus;
         try {
             testCase["_Location"] = JSON.stringify(test.location);
@@ -331,19 +339,29 @@ class tesultsReporter {
         }
 
         let replace = false;
-        if (this.testIndices[testCase.suite + " " + testCase.name] !== undefined) {
-            let index = this.testIndices[testCase.suite + " " + testCase.name];
+        const hash = testCase.suite + " " + testCase.name;
+        if (this.testIndices[hash] !== undefined) {  
+            // This is not the first run of this test case
+            let index = this.testIndices[hash];
             if (index < this.data.results.cases.length) {
                 let t = this.data.results.cases[index];
                 if (t["_Retry"] !== testCase["_Retry"]) {
+                    // Replacement
                     replace = true;
+                    const retries = this.retries.get(hash);
+                    testCase["_Retries"] = Array.from(retries);
+                    retries.push(testCase);
+                    this.retries.set(hash, retries);
                     this.data.results.cases[index] = testCase;
                 }
             }
         } else {
-            this.testIndices[testCase.suite + " " + testCase.name] = this.data.results.cases.length
+            // This is the first run of this test case
+            testCase["_Retries"] = [];
+            this.retries.set(hash, [testCase]);
+            this.testIndices[hash] = this.data.results.cases.length
         }
-        
+ 
         if (replace === false) {
             this.data.results.cases.push(testCase);
         }
