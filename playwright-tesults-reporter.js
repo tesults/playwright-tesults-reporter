@@ -19,7 +19,7 @@ class tesultsReporter {
             },
             metadata: {
                 integration_name: "playwright-tesults-reporter",
-                integration_version: "1.3.0",
+                integration_version: "1.3.1",
                 test_framework: "playwright"
             }
         };
