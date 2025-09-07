@@ -19,7 +19,7 @@ class tesultsReporter {
             },
             metadata: {
                 integration_name: "playwright-tesults-reporter",
-                integration_version: "1.3.1",
+                integration_version: "1.4.0",
                 test_framework: "playwright"
             }
         };
@@ -175,17 +175,7 @@ class tesultsReporter {
                 testCase.result = "fail";
             }
         }
-        try {
-            if (test.annotations !== undefined && test.annotations !== null) {
-                if (Array.isArray(test.annotations)) {
-                    Object.keys(test.annotations).forEach((key) => {
-                        testCase["_Annotation " + key] = test.annotations[key]
-                    });
-                }
-            }
-        } catch (err) {
-            // Unable to capture annotations
-        }
+        
         testCase["_Timeout"] = test.timeout;
         testCase["_Retries Configuration Setting"] = test.retries;
         testCase["_Expected Status"] = test.expectedStatus;
@@ -327,6 +317,25 @@ class tesultsReporter {
             }
         }
 
+        // Add Enhanced Reporting data from annotations
+        try {
+            let annotationNum = 1;
+            if (test.annotations && Array.isArray(test.annotations)) {
+                test.annotations.forEach((annotation) => {
+                    if (annotation.type === "custom") {
+                        testCase[annotation.key] = annotation.value;
+                    } else if (annotation.type === "desc") {
+                        testCase.desc = annotation.value;
+                    } else {
+                        testCase["_Annotation " + annotationNum] = JSON.stringify(annotation);
+                        annotationNum++;
+                    }
+                });
+            }
+        } catch (err) {
+            // Unable to capture annotations or enhanced reporting data
+        }
+        
         if (result.retry !== undefined && result.retry !== null) {
             testCase["_Retry"] = result.retry;
         }
@@ -420,3 +429,27 @@ class tesultsReporter {
   }
   
   module.exports = tesultsReporter
+  
+  // Enhanced reporting functions
+  
+  module.exports.custom = (key, value) => {
+    // Use Playwright's test.info().annotations to store custom data
+    const { test } = require('@playwright/test');
+    const testInfo = test.info();
+    testInfo.annotations.push({
+      type: "custom",
+      key: "_" + key,
+      value: value
+    });
+  }
+
+  module.exports.description = (value) => {
+    // Use Playwright's test.info().annotations to store custom data
+    const { test } = require('@playwright/test');
+    const testInfo = test.info();
+    testInfo.annotations.push({
+      type: "desc",
+      key: "desc",
+      value: value
+    });
+  }
