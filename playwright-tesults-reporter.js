@@ -19,7 +19,7 @@ class tesultsReporter {
             },
             metadata: {
                 integration_name: "playwright-tesults-reporter",
-                integration_version: "1.4.0",
+                integration_version: "1.5.0",
                 test_framework: "playwright"
             }
         };
@@ -262,10 +262,14 @@ class tesultsReporter {
         }
 
         if (result.steps !== undefined && result.steps !== null) {
-            testCase.steps = [];
-            if (Array.isArray(result.steps)) {
-                for (let i = 0; i < result.steps.length; i++) {
-                    let step = result.steps[i];
+            // Recursive function to process steps and nested steps
+            const processSteps = (steps) => {
+                if (!Array.isArray(steps)) {
+                    return [];
+                }
+                let processedSteps = [];
+                for (let i = 0; i < steps.length; i++) {
+                    let step = steps[i];
                     let stepObj = {};
                     stepObj.name = step.title;
                     try {
@@ -283,7 +287,7 @@ class tesultsReporter {
                         // Unable to handle location
                     }
                     stepObj.result = "pass";
-                    if (step.error !== undefined && step.error !=null) {
+                    if (step.error !== undefined && step.error != null) {
                         stepObj.result = "fail";
                         try {
                             stepObj.reason = JSON.stringify(step.error);
@@ -291,10 +295,12 @@ class tesultsReporter {
                             // Unable to handle reason
                         }
                     }
-                    if (step.titlePath() !== undefined && step.titlePath() !=null) {
-                        if (Array.isArray(step.titlePath()))
+                    if (step.titlePath !== undefined && typeof step.titlePath === 'function') {
                         try {
-                            stepObj["_Path"] = JSON.stringify(step.titlePath());
+                            const titlePath = step.titlePath();
+                            if (titlePath !== undefined && titlePath !== null && Array.isArray(titlePath)) {
+                                stepObj["_Path"] = JSON.stringify(titlePath);
+                            }
                         } catch (err) {
                             // Unable to handle path
                         }
@@ -302,19 +308,17 @@ class tesultsReporter {
                     if (step.category !== undefined && step.category !== null) {
                         stepObj["_Category"] = step.category;
                     }
-                    if (step.steps !== undefined && step.steps !== null) {
-                        if (Array.isArray(step.steps)) {
-                            try {
-                                stepObj["_Steps"] = JSON.stringify(step.steps);
-                            } catch (err) {
-                                // Unable to handle steps
-                            }
-                        }
+                    // Recursively process nested steps
+                    if (step.steps !== undefined && step.steps !== null && Array.isArray(step.steps) && step.steps.length > 0) {
+                        stepObj.steps = processSteps(step.steps);
                     }
 
-                    testCase.steps.push(stepObj);
+                    processedSteps.push(stepObj);
                 }
-            }
+                return processedSteps;
+            };
+
+            testCase.steps = processSteps(result.steps);
         }
 
         // Add Enhanced Reporting data from annotations
