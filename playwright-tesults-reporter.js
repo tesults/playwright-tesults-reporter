@@ -8,6 +8,10 @@ const tesults = require('tesults');
 /** @implements {import('@playwright/test/reporter').Reporter} */
 class tesultsReporter {
 
+    constructor(options = {}) {
+        this.options = options || {};
+    }
+
     onBegin(config, suite) {
         this.disabled = true
         this.retries = new Map();
@@ -53,6 +57,7 @@ class tesultsReporter {
         this.disabled = false;
         
         this.targetKey = "tesults-target";
+        this.outputFileKey = "tesults-output-file";
         this.filesKey = "tesults-files";
         this.configKey = "tesults-config";
         this.buildNameKey = "tesults-build-name";
@@ -60,7 +65,25 @@ class tesultsReporter {
         this.buildResultKey = "tesults-build-result";
         this.buildReasonKey = "tesults-build-reason";
 
-        if (config !== undefined && config !== null) {
+        const optionKeys = [
+            this.targetKey,
+            this.outputFileKey,
+            this.filesKey,
+            this.buildNameKey,
+            this.buildDescKey,
+            this.buildResultKey,
+            this.buildReasonKey
+        ];
+        let hasReporterOptions = false;
+        for (let i = 0; i < optionKeys.length; i++) {
+            const key = optionKeys[i];
+            if (this.options[key] !== undefined) {
+                this.args[key] = this.options[key];
+                hasReporterOptions = true;
+            }
+        }
+
+        if (hasReporterOptions === false && config !== undefined && config !== null) {
             if (config.reporter !== undefined && config.reporter !== null) {
                 if (Array.isArray(config.reporter)) {
                     for (let i = 0; i < config.reporter.length; i++) {
@@ -73,6 +96,7 @@ class tesultsReporter {
                                         let reportArgs = reporter[1];
                                         if (reportArgs !== undefined && reportArgs !== null) {
                                             this.args[this.targetKey]  = reportArgs[this.targetKey]
+                                            this.args[this.outputFileKey] = reportArgs[this.outputFileKey]
                                             this.args[this.filesKey]  = reportArgs[this.filesKey]
                                             this.args[this.buildNameKey]  = reportArgs[this.buildNameKey]
                                             this.args[this.buildDescKey]  = reportArgs[this.buildDescKey]
@@ -114,8 +138,8 @@ class tesultsReporter {
         });
         */
 
-        if (this.args[this.targetKey] === undefined) {
-            console.log(this.targetKey + " not provided. Tesults disabled.");
+        if (this.args[this.targetKey] === undefined && this.args[this.outputFileKey] === undefined) {
+            console.log(this.targetKey + " and " + this.outputFileKey + " not provided. Tesults disabled.");
             this.disabled = true;
         }
     }
@@ -412,8 +436,31 @@ class tesultsReporter {
             this.data.results.cases.push(buildCase);
         }
     
+        const target = this.args[this.targetKey];
+        const outputFile = this.args[this.outputFileKey];
+        let outputError;
+
+        if (outputFile !== undefined) {
+            try {
+                const outputData = { ...this.data, target: "" };
+                fs.mkdirSync(path.dirname(outputFile), { recursive: true });
+                fs.writeFileSync(outputFile, JSON.stringify(outputData, null, 2));
+                console.log('Tesults results written to ' + outputFile);
+            } catch (err) {
+                outputError = err;
+                console.log('Tesults error, failed to write results file.');
+            }
+        }
+
+        if (target === undefined) {
+            if (outputError !== undefined) {
+                return Promise.reject(outputError);
+            }
+            return;
+        }
+
         // Tesults upload
-        this.data.target = this.args[this.targetKey];
+        this.data.target = target;
         console.log('Tesults results upload...');
         return new Promise((resolve, reject) => {
             tesults.results(this.data, function (err, response) {
@@ -428,6 +475,10 @@ class tesultsReporter {
                     resolve();
                 }
             });
+        }).then(() => {
+            if (outputError !== undefined) {
+                return Promise.reject(outputError);
+            }
         });
     }
   }

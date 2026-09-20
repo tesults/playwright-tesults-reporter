@@ -2,11 +2,25 @@
 
 Tesults is a test results reporting application. https://www.tesults.com
 
-Playwright Tesults Reporter is a library for uploading test results to Tesults from Playwright.
+Playwright Tesults Reporter is a library for reporting Playwright test results to Tesults or to a local Tesults JSON file.
 
 ## Installation
 
 `npm install playwright-tesults-reporter --save`
+
+## Local output
+
+The reporter can write the standard Tesults JSON data payload to a local file without uploading it:
+
+```js
+reporter: [
+  ['playwright-tesults-reporter', {
+    'tesults-output-file': './tesults-results.json'
+  }]
+]
+```
+
+`tesults-target` and `tesults-output-file` can be used independently or together. Local output uses an empty `target` value in the JSON payload.
 
 ## Documentation
 
