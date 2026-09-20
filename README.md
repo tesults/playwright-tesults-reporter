@@ -22,6 +22,22 @@ reporter: [
 
 `tesults-target` and `tesults-output-file` can be used independently or together. Local output uses an empty `target` value in the JSON payload.
 
+## Testing
+
+Run the local test suite without uploading results:
+
+```sh
+npm test
+```
+
+Run the opt-in upload integration test with a Tesults target token:
+
+```sh
+TESULTS_TARGET='your-target-token' npm run test:upload
+```
+
+The target token is read from the environment and must not be committed to the repository. The integration test uploads one passing test case to Tesults.
+
 ## Documentation
 
 Documentation is available at https://www.tesults.com/docs.
