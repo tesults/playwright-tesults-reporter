@@ -23,7 +23,7 @@ class tesultsReporter {
             },
             metadata: {
                 integration_name: "playwright-tesults-reporter",
-                integration_version: "1.6.0",
+                integration_version: "1.6.1",
                 test_framework: "playwright"
             }
         };
@@ -110,6 +110,13 @@ class tesultsReporter {
                     }
                 }
             }
+        }
+
+        if (
+            process.env.TESULTS_OUTPUT_FILE !== undefined &&
+            process.env.TESULTS_OUTPUT_FILE !== ""
+        ) {
+            this.args[this.outputFileKey] = process.env.TESULTS_OUTPUT_FILE;
         }
 
         /* Reserved for future use

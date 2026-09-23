@@ -8,6 +8,7 @@ const TesultsReporter = require('./playwright-tesults-reporter');
 const originalResults = tesults.results;
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'playwright-tesults-reporter-'));
 const uploads = [];
+const originalOutputFileEnv = process.env.TESULTS_OUTPUT_FILE;
 
 tesults.results = (data, callback) => {
     uploads.push(JSON.parse(JSON.stringify(data)));
@@ -91,9 +92,52 @@ async function finish(reporter) {
         assert.ok(fs.existsSync(injectedPath));
         assert.strictEqual(uploads.length, 2);
 
+        const envOnlyPath = path.join(tempDir, 'env-only', 'tesults-results.json');
+        process.env.TESULTS_OUTPUT_FILE = envOnlyPath;
+        const envOnly = new TesultsReporter();
+        envOnly.onBegin(config([
+            ['playwright-tesults-reporter']
+        ]), {});
+        await finish(envOnly);
+
+        assert.ok(fs.existsSync(envOnlyPath));
+        assert.strictEqual(uploads.length, 2);
+
+        const envAndTargetPath = path.join(tempDir, 'env-and-target', 'tesults-results.json');
+        process.env.TESULTS_OUTPUT_FILE = envAndTargetPath;
+        const envAndTarget = new TesultsReporter();
+        envAndTarget.onBegin(config([
+            ['playwright-tesults-reporter', {
+                'tesults-target': 'target-token-env'
+            }]
+        ]), {});
+        await finish(envAndTarget);
+
+        assert.ok(fs.existsSync(envAndTargetPath));
+        assert.strictEqual(uploads.length, 3);
+        assert.strictEqual(uploads[2].target, 'target-token-env');
+
+        const explicitPath = path.join(tempDir, 'env-wins', 'explicit.json');
+        const envOverridePath = path.join(tempDir, 'env-wins', 'tesults-results.json');
+        process.env.TESULTS_OUTPUT_FILE = envOverridePath;
+        const envWins = new TesultsReporter({
+            'tesults-output-file': explicitPath
+        });
+        envWins.onBegin(config(), {});
+        await finish(envWins);
+
+        assert.ok(fs.existsSync(envOverridePath));
+        assert.ok(!fs.existsSync(explicitPath));
+        assert.strictEqual(uploads.length, 3);
+
         console.log('All tests passed.');
     } finally {
         tesults.results = originalResults;
+        if (originalOutputFileEnv === undefined) {
+            delete process.env.TESULTS_OUTPUT_FILE;
+        } else {
+            process.env.TESULTS_OUTPUT_FILE = originalOutputFileEnv;
+        }
         fs.rmSync(tempDir, { recursive: true, force: true });
     }
 })().catch((err) => {
