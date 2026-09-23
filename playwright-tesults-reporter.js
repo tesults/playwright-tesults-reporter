@@ -112,6 +112,14 @@ class tesultsReporter {
             }
         }
 
+        if (
+            this.args[this.outputFileKey] === undefined &&
+            process.env.TESULTS_OUTPUT_FILE !== undefined &&
+            process.env.TESULTS_OUTPUT_FILE !== ""
+        ) {
+            this.args[this.outputFileKey] = process.env.TESULTS_OUTPUT_FILE;
+        }
+
         /* Reserved for future use
         process.argv.forEach((val, index) => {
             if (val.indexOf(this.targetKey) === 0) {
