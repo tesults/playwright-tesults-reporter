@@ -117,17 +117,17 @@ async function finish(reporter) {
         assert.strictEqual(uploads.length, 3);
         assert.strictEqual(uploads[2].target, 'target-token-env');
 
-        const explicitPath = path.join(tempDir, 'explicit-wins', 'tesults-results.json');
-        const ignoredEnvPath = path.join(tempDir, 'explicit-wins', 'ignored-env.json');
-        process.env.TESULTS_OUTPUT_FILE = ignoredEnvPath;
-        const explicitWins = new TesultsReporter({
+        const explicitPath = path.join(tempDir, 'env-wins', 'explicit.json');
+        const envOverridePath = path.join(tempDir, 'env-wins', 'tesults-results.json');
+        process.env.TESULTS_OUTPUT_FILE = envOverridePath;
+        const envWins = new TesultsReporter({
             'tesults-output-file': explicitPath
         });
-        explicitWins.onBegin(config(), {});
-        await finish(explicitWins);
+        envWins.onBegin(config(), {});
+        await finish(envWins);
 
-        assert.ok(fs.existsSync(explicitPath));
-        assert.ok(!fs.existsSync(ignoredEnvPath));
+        assert.ok(fs.existsSync(envOverridePath));
+        assert.ok(!fs.existsSync(explicitPath));
         assert.strictEqual(uploads.length, 3);
 
         console.log('All tests passed.');

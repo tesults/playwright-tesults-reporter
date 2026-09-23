@@ -113,7 +113,6 @@ class tesultsReporter {
         }
 
         if (
-            this.args[this.outputFileKey] === undefined &&
             process.env.TESULTS_OUTPUT_FILE !== undefined &&
             process.env.TESULTS_OUTPUT_FILE !== ""
         ) {

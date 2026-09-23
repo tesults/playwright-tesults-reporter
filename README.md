@@ -22,7 +22,7 @@ reporter: [
 
 `tesults-target` and `tesults-output-file` can be used independently or together. Local output uses an empty `target` value in the JSON payload.
 
-The output file can also be supplied through the `TESULTS_OUTPUT_FILE` environment variable. This is useful for CI integrations such as the Tesults GitHub Action, which can provide the output destination without hard-coding a CI-specific path in Playwright configuration. An explicit `tesults-output-file` reporter option takes precedence over the environment variable.
+The output file can also be supplied through the `TESULTS_OUTPUT_FILE` environment variable. This is useful for CI integrations such as the Tesults GitHub Action, which can provide the output destination without hard-coding a CI-specific path in Playwright configuration. When set, `TESULTS_OUTPUT_FILE` overrides the `tesults-output-file` reporter option for that run.
 
 ## Testing
 
